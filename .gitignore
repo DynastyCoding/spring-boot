@@ -22,3 +22,9 @@ Thumbs.db
 
 # Env
 .env
+
+# H2 database
+data/
+*.db
+*.mv.db
+*.trace.db
