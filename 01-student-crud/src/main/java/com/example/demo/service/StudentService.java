@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.request.CreateStudentRequest;
+import com.example.demo.dto.response.StudentResponse;
 import com.example.demo.entity.Student;
 import com.example.demo.repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -15,26 +17,38 @@ public class StudentService {
         this.studentRepository = studentRepository ;
     }
 
-    public List<Student> getAllStudents(){
-        return studentRepository.findAll();
+    public List<StudentResponse> getAllStudents(){
+
+        return studentRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Student getStudentById(Long id){
-        return studentRepository.findById(id).orElse(null);
+    public StudentResponse getStudentById(Long id){
+        Student student = studentRepository.findById(id).orElse(null);
+        if (student == null) return null;
+        return toResponse(student);
     }
 
-    public Student createStudent(Student student){
-        return studentRepository.save(student);
+    public StudentResponse createStudent(CreateStudentRequest req){
+        Student student = new Student();
+        student.setName(req.getName());
+        student.setEmail(req.getEmail());
+
+        Student saved = studentRepository.save(student);
+        return toResponse(saved);
     }
 
-    public Student updateStudent(Long id, Student student){
+    public StudentResponse updateStudent(Long id, CreateStudentRequest req){
         Student existing = studentRepository.findById(id).orElse(null);
         if(existing == null) return null;
 
-        existing.setName(student.getName());
-        existing.setEmail(student.getEmail());
+        existing.setName(req.getName());
+        existing.setEmail(req.getEmail());
 
-        return studentRepository.save(existing);
+        Student saved = studentRepository.save(existing);
+        return toResponse(saved);
     }
 
     public boolean deleteStudent(Long id){
@@ -43,6 +57,14 @@ public class StudentService {
         }
         studentRepository.deleteById(id);
         return true;
+    }
+
+    private  StudentResponse toResponse(Student student){
+        StudentResponse res = new StudentResponse();
+        res.setId(student.getId());
+        res.setName(student.getName());
+        res.setEmail(student.getEmail());
+        return res;
     }
 
 }
